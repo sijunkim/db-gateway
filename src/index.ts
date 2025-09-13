@@ -15,6 +15,29 @@ function hasStringProperty<T extends string>(obj: any, prop: T): obj is { [K in 
   return obj && typeof obj === 'object' && typeof obj[prop] === 'string';
 }
 
+function createToolHandlers(dbOperations: DatabaseOperations): { [key: string]: (args: unknown) => Promise<any> } {
+  return {
+    "execute_query": (args) => {
+      if (!hasStringProperty(args, 'query')) throw new Error('Argument \'query\' must be a string.');
+      return dbOperations.executeQuery(args.query);
+    },
+    "show_tables": () => dbOperations.showTables(),
+    "describe_table": (args) => {
+      if (!hasStringProperty(args, 'table_name')) throw new Error('Argument \'table_name\' must be a string.');
+      return dbOperations.describeTable(args.table_name);
+    },
+    "use_database": (args) => {
+      if (!hasStringProperty(args, 'database_name')) throw new Error('Argument \'database_name\' must be a string.');
+      return dbOperations.useDatabase(args.database_name);
+    },
+    "list_databases": () => dbOperations.listDatabases(),
+    "get_schema": (args) => {
+      if (!hasStringProperty(args, 'table_name')) throw new Error('Argument \'table_name\' must be a string.');
+      return dbOperations.getSchema(args.table_name);
+    },
+  };
+}
+
 async function main() {
   console.error('Starting MySQL MCP Server...');
 
@@ -37,27 +60,7 @@ async function main() {
     return { tools: toolDefinitions };
   });
 
-  // 2. switch 문 제거: 핸들러 맵을 사용하여 확장성 개선
-  const toolHandlers: { [key: string]: (args: unknown) => Promise<any> } = {
-    "execute_query": (args) => {
-      if (!hasStringProperty(args, 'query')) throw new Error('Argument \'query\' must be a string.');
-      return dbOperations.executeQuery(args.query);
-    },
-    "show_tables": () => dbOperations.showTables(),
-    "describe_table": (args) => {
-      if (!hasStringProperty(args, 'table_name')) throw new Error('Argument \'table_name\' must be a string.');
-      return dbOperations.describeTable(args.table_name);
-    },
-    "use_database": (args) => {
-      if (!hasStringProperty(args, 'database_name')) throw new Error('Argument \'database_name\' must be a string.');
-      return dbOperations.useDatabase(args.database_name);
-    },
-    "list_databases": () => dbOperations.listDatabases(),
-    "get_schema": (args) => {
-      if (!hasStringProperty(args, 'table_name')) throw new Error('Argument \'table_name\' must be a string.');
-      return dbOperations.getSchema(args.table_name);
-    },
-  };
+  const toolHandlers = createToolHandlers(dbOperations);
 
   // 도구 호출 핸들러 (리팩토링됨)
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -67,6 +70,7 @@ async function main() {
     if (!handler) {
       throw new Error(`Unknown tool: ${request.params.name}`);
     }
+
 
     try {
       const result = await handler(request.params.arguments);
