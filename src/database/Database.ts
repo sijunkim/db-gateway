@@ -6,4 +6,6 @@ export interface DatabaseOperations {
   showTables(): Promise<any>;
   describeTable(tableName: string): Promise<any>;
   useDatabase(databaseName: string): Promise<any>;
+  listDatabases(): Promise<any>;
+  getSchema(tableName: string): Promise<any>;
 }

@@ -54,4 +54,16 @@ export class MySqlOperations implements DatabaseOperations {
     await this.connection.query(`USE \`${databaseName}\``);
     return `Successfully switched to database: ${databaseName}`;
   }
+
+  async listDatabases(): Promise<any> {
+    if (!this.connection) throw new Error('Not connected to database');
+    const [rows] = await this.connection.execute('SHOW DATABASES');
+    return rows;
+  }
+
+  async getSchema(tableName: string): Promise<any> {
+    if (!this.connection) throw new Error('Not connected to database');
+    const [rows] = await this.connection.execute(`SHOW CREATE TABLE \`${tableName}\``);
+    return rows;
+  }
 }

@@ -52,6 +52,11 @@ async function main() {
       if (!hasStringProperty(args, 'database_name')) throw new Error('Argument \'database_name\' must be a string.');
       return dbOperations.useDatabase(args.database_name);
     },
+    "list_databases": () => dbOperations.listDatabases(),
+    "get_schema": (args) => {
+      if (!hasStringProperty(args, 'table_name')) throw new Error('Argument \'table_name\' must be a string.');
+      return dbOperations.getSchema(args.table_name);
+    },
   };
 
   // 도구 호출 핸들러 (리팩토링됨)

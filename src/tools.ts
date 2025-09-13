@@ -52,5 +52,24 @@ export const toolDefinitions: Tool[] = [
       },
       required: ["database_name"]
     }
+  },
+  {
+    name: "list_databases",
+    description: "List all databases the current user can see",
+    inputSchema: { type: "object", properties: {} }
+  },
+  {
+    name: "get_schema",
+    description: "Get the CREATE TABLE statement for a specific table",
+    inputSchema: {
+      type: "object",
+      properties: {
+        table_name: {
+          type: "string",
+          description: "The name of the table to get the schema for"
+        }
+      },
+      required: ["table_name"]
+    }
   }
 ];
