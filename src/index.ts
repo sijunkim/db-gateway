@@ -26,12 +26,12 @@ async function main() {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    console.error("Tools list requested");
+    console.log("Tools list requested");
     return { tools: toolDefinitions };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    console.error(`Tool call requested: ${request.params.name}`);
+    console.log(`Tool call requested: ${request.params.name}`);
 
     const toolHandlers = createToolHandlers(dbOperations);
     const handler = toolHandlers[request.params.name];
@@ -77,6 +77,6 @@ async function main() {
 
 main().catch((error) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.log("Server startup error:", message);
+  console.error("Server startup error:", message);
   process.exit(1);
 });
