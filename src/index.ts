@@ -39,7 +39,7 @@ function createToolHandlers(dbOperations: DatabaseOperations): { [key: string]: 
 }
 
 async function main() {
-  console.error('Starting MySQL MCP Server...');
+  console.error('Starting DB Gateway MCP Server...');
 
   const dbOperations: DatabaseOperations = new MySqlOperations();
 
@@ -50,7 +50,7 @@ async function main() {
   }
 
   const server = new Server(
-    { name: "mysql-mcp-server", version: "1.0.0" },
+    { name: "db-gateway", version: "1.0.0" },
     { capabilities: { tools: {} } }
   );
 
