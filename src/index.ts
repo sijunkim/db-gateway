@@ -10,7 +10,7 @@ import { toolDefinitions } from "./tools/index";
 import { createToolHandlers } from "./handlers/toolHandlers";
 
 async function main() {
-  console.error("Starting DB Gateway MCP Server...");
+  console.log("Starting DB Gateway MCP Server...");
 
   const dbOperations: DatabaseOperations = new MySqlOperations();
 
@@ -25,18 +25,15 @@ async function main() {
     { capabilities: { tools: {} } }
   );
 
-  // 3. 도구 목록 분리: 외부 파일에서 도구 정의를 가져와 사용
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     console.error("Tools list requested");
     return { tools: toolDefinitions };
   });
 
-  const toolHandlers = createToolHandlers(dbOperations);
-
-  // 도구 호출 핸들러 (리팩토링됨)
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     console.error(`Tool call requested: ${request.params.name}`);
 
+    const toolHandlers = createToolHandlers(dbOperations);
     const handler = toolHandlers[request.params.name];
     if (!handler) {
       throw new Error(`Unknown tool: ${request.params.name}`);
