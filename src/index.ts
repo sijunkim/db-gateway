@@ -7,10 +7,7 @@ import {
 import { MySqlOperations } from "./database/mysql/MySqlOperations";
 import { DatabaseOperations } from "./database/Database";
 import { toolDefinitions } from "./tools/index";
-import { hasStringProperty } from './utils/typeGuards';
-import { createToolHandlers } from './handlers/toolHandlers';
-
-
+import { createToolHandlers } from "./handlers/toolHandlers";
 
 async function main() {
   console.error("Starting DB Gateway MCP Server...");
