@@ -1,22 +1,40 @@
+import * as dotenv from "dotenv";
+dotenv.config();
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { MySqlOperations } from "./database/mysql/MySqlOperations";
-import { DatabaseOperations } from "./database/Database";
+import { Database } from "./database/Database";
+import { createDatabase } from "./database/databaseFactory";
 import { toolDefinitions } from "./tools/index";
 import { createToolHandlers } from "./handlers/toolHandlers";
 
 async function main() {
   console.error("Starting DB Gateway MCP Server...");
 
-  const dbOperations: DatabaseOperations = new MySqlOperations();
+  const connections: { [key: string]: Database } = {};
+  const dbTypes = process.env.DBS?.split(",") || [];
 
   try {
-    await dbOperations.connect();
+    for (const dbType of dbTypes) {
+      const db = createDatabase(dbType.trim());
+      await db.connect();
+      connections[dbType.trim()] = db;
+    }
+    if (Object.keys(connections).length === 0) {
+      console.error(
+        "No databases configured to connect. Please set the DBS environment variable."
+      );
+    } else {
+      console.error(
+        `Successfully connected to: ${Object.keys(connections).join(", ")}`
+      );
+    }
   } catch (error) {
+    console.error("Failed to connect to one or more databases.", error);
     process.exit(1);
   }
 
@@ -33,7 +51,7 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     console.error(`Tool call requested: ${request.params.name}`);
 
-    const toolHandlers = createToolHandlers(dbOperations);
+    const toolHandlers = createToolHandlers(connections);
     const handler = toolHandlers[request.params.name];
     if (!handler) {
       throw new Error(`Unknown tool: ${request.params.name}`);
@@ -64,7 +82,9 @@ async function main() {
 
   const cleanup = async () => {
     console.error("Shutting down gracefully...");
-    await dbOperations.disconnect();
+    for (const db of Object.values(connections)) {
+      await db.disconnect();
+    }
     process.exit(0);
   };
   process.on("SIGINT", cleanup);
@@ -72,7 +92,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("MySQL MCP Server is running and connected");
+  console.error("DB Gateway MCP Server is running and connected.");
 }
 
 main().catch((error) => {
