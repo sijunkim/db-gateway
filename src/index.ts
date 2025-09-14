@@ -10,7 +10,7 @@ import { toolDefinitions } from "./tools/index";
 import { createToolHandlers } from "./handlers/toolHandlers";
 
 async function main() {
-  console.log("Starting DB Gateway MCP Server...");
+  console.error("Starting DB Gateway MCP Server...");
 
   const dbOperations: DatabaseOperations = new MySqlOperations();
 
@@ -26,12 +26,12 @@ async function main() {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
-    console.log("Tools list requested");
+    console.error(`Tools list requested`);
     return { tools: toolDefinitions };
   });
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    console.log(`Tool call requested: ${request.params.name}`);
+    console.error(`Tool call requested: ${request.params.name}`);
 
     const toolHandlers = createToolHandlers(dbOperations);
     const handler = toolHandlers[request.params.name];
@@ -72,7 +72,7 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.log("MySQL MCP Server is running and connected");
+  console.error("MySQL MCP Server is running and connected");
 }
 
 main().catch((error) => {
