@@ -4,6 +4,9 @@
 # Build output
 /dist
 
+# IntelliJ IDEA
+/.idea
+
 # Logs
 logs
 *.log
